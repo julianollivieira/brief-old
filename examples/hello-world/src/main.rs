@@ -1,23 +1,7 @@
-use brief::address::{Address, MailBox};
+use brief::address::{Address, MailBox, MailBoxes};
 
 fn main() {
-    let address = Address {
-        user: String::from("user"),
-        domain: String::from("example.com"),
-    };
+    let mail_box: MailBox = "Name <user@domain>".parse().unwrap();
 
-    println!("address: {}", address);
-
-    let mail_box = MailBox {
-        name: String::from("John"),
-        address,
-    };
-
-    println!("mail box: {}", mail_box);
-    // let message = message_builder()
-    //     .from("sender@example.com".parse().unwrap())
-    //     .to("recipient@example.com".parse().unwrap())
-    //     .build();
-    //
-    // println!("{:#?}", message);
+    println!("{:#?}", mail_box);
 }
