@@ -144,29 +144,27 @@ impl Display for Address {
 
 /// Represents a name for a mail box
 #[derive(Debug)]
-pub struct Name(String);
+pub struct Name<'a>(&'a str);
 
-impl FromStr for Name {
-    type Err = ParseNameError;
+impl<'a> TryFrom<&'a str> for Name<'a> {
+    type Error = ParseNameError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         let forbidden_characters = ['@', '<', '>'];
 
-        if s.contains(&forbidden_characters) {
+        if value.contains(&forbidden_characters) {
             return Err(ParseNameError::ContainsForiddenCharacters);
         }
 
-        if !s.is_ascii() {
+        if !value.is_ascii() {
             return Err(ParseNameError::ContainsNonAsciiCharacters);
         }
 
-        // TODO: Check if I forgot to check other possible invalid name cases
-
-        Ok(Self(s.to_string()))
+        Ok(Self(value))
     }
 }
 
-impl Display for Name {
+impl Display for Name<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
     }
@@ -174,12 +172,12 @@ impl Display for Name {
 
 /// Represents a mail box, which is a combination of an address and possibly a name
 #[derive(Debug)]
-pub struct MailBox {
-    pub name: Option<Name>,
+pub struct MailBox<'a> {
+    pub name: Option<Name<'a>>,
     pub address: Address,
 }
 
-impl MailBox {
+impl<'a> MailBox<'a> {
     /// Creates a new mailbox from a name and address, returning an error if the name is
     /// invalid
     ///
@@ -189,21 +187,21 @@ impl MailBox {
     /// let address = Address::try_new("user", "domain.com").unwrap();
     /// let mail_box = MailBox::try_new(Some("name"), address).unwrap();
     /// ````
-    pub fn try_new(name: Option<&str>, address: Address) -> Result<Self, ParseMailBoxError> {
+    pub fn try_new(name: Option<&'a str>, address: Address) -> Result<Self, ParseMailBoxError> {
         Ok(Self {
             name: name
-                .map(|n| n.parse().map_err(ParseMailBoxError::InvalidName))
+                .map(|n| Name::try_from(n).map_err(ParseMailBoxError::InvalidName))
                 .transpose()?,
             address,
         })
     }
 }
 
-impl FromStr for MailBox {
-    type Err = ParseMailBoxError;
+impl<'a> TryFrom<&'a str> for MailBox<'a> {
+    type Error = ParseMailBoxError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let trimmed = s.trim();
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        let trimmed = value.trim();
 
         match (trimmed.find('<'), trimmed.find('>')) {
             (None, None) => Err(ParseMailBoxError::MissingAngleBrackets),
@@ -216,16 +214,16 @@ impl FromStr for MailBox {
 
                 let split = trimmed.split_once('<').unwrap();
 
-                let mut name: Option<String> = None;
+                let mut name: Option<&str> = None;
                 if !split.0.is_empty() {
-                    name = Some(split.0.trim().to_string());
+                    name = Some(split.0.trim());
                 }
 
                 let address = split.1.split_once('>').unwrap().0;
 
                 return Ok(Self {
                     name: name
-                        .map(|n| n.parse().map_err(ParseMailBoxError::InvalidName))
+                        .map(|n| Name::try_from(n).map_err(ParseMailBoxError::InvalidName))
                         .transpose()?,
                     address: address.parse().map_err(ParseMailBoxError::InvalidAddress)?,
                 });
@@ -234,7 +232,7 @@ impl FromStr for MailBox {
     }
 }
 
-impl Display for MailBox {
+impl Display for MailBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(name) = &self.name {
             f.write_fmt(format_args!("{} <{}>", name, self.address))
@@ -243,6 +241,3 @@ impl Display for MailBox {
         }
     }
 }
-
-// TODO: extensive testing
-
