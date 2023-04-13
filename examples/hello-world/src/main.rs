@@ -1,7 +1,7 @@
-use brief::address::MailBox;
+use brief::mail::Mailbox;
 
 fn main() {
-    let mail_box = MailBox::try_from("Name <user@domain>").unwrap();
+    let mailbox = Mailbox::try_from("name <user@domain.com>").unwrap();
 
-    println!("{:#?}", mail_box);
+    println!("{:#?}", mailbox);
 }

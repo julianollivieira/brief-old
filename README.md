@@ -1,16 +1,12 @@
 # brief
 
-brief is a mailer library for Rust, focussing on type-safe creation and sending of email.
+brief is a Rust library to build and send mails.
 
 ## features
 
+- does zero allocations
+- by default does not use the standard library (enable the `std` feature to use it)
+
+## planned features
+
 -
-
-## todos
-
-- implement all headers from [RFC 2076](https://www.rfc-editor.org/rfc/rfc2076)
-- implement header (de)serialization according to [RFC 5322](https://www.rfc-editor.org/rfc/rfc5322#section-2)
-
-## license
-
-this program is distributed under the terms of the MIT license.

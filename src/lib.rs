@@ -1,3 +1,3 @@
-pub mod address;
-pub mod header;
-pub mod message;
+#![no_std]
+
+pub mod mail;
